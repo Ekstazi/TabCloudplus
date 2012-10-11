@@ -1,10 +1,12 @@
-Tabcloud
+Tabcloud+
+
+Save, restore and track window sessions over time and across multiple computers.
 
 Chrome extension in folder "chrome"
 
 Service from Google App Engine reuses the original author's service.
+Firefox and Android app are not updated by this project.
 
-Save, restore and track window sessions over time and across multiple computers.
 This extension is based on the TabCloud extension, with one feature added, window/session tracking.
 1) when open an already saved window, the newly opened local window will automatically track this saved window. Any tabs added/deleted in this new window will be saved to the same saved window when click the "save" button.
 2) when open a new window locally and save this window, this window will automatically track the saved window, i.e. any future changes in this window will be reflected in the saved window after a click on save.
