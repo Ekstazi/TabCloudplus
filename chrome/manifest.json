@@ -1,6 +1,7 @@
 {
-	"name": "TabCloud",
-	"version": "1.11",
+    "manifest_version": 2,
+	"name": "TabCloud+",
+	"version": "1.1.0",
 	
 	"icons": {
 		"16": "images/icon16.png",
@@ -8,15 +9,19 @@
         "128": "images/icon128.png"
 	},
 	
-	"description": "Save and restore window sessions over time and across multiple computers.",
-	"permissions": [
+	"description": "Save, restore and track window sessions over time and across multiple computers.",
+    
+    "permissions": [
 		"tabs",
 		"chrome://favicon/",
 		"https://chrometabcloud.appspot.com/*"
 	],
 	
-	"background_page": "background.html",
-	
+	"background": {
+        "page": "background.html",
+        "persistent": true
+	},
+    
 	"options_page": "options.html",
 	
 	"browser_action": {
