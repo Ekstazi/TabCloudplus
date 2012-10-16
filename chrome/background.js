@@ -5,8 +5,9 @@ if (localStorage.deleteconfirm === undefined)
 if (localStorage.encryption === undefined)
 	localStorage.encryption = 'no';
 	
-localStorage.tempWindowNames = "{}";
-
+//localStorage.tempWindowNames = "{}";
+/*temp window names*/
+tempWindowNames = {};
 /* tracked windows, a map "chrome window id" : "tagcloud saved window id" */
 trackedWindows = {};
          
@@ -14,7 +15,7 @@ chrome.extension.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.method  === "open_saved_window") {
             if (localStorage.openin === 'window') {
-                chrome.windows.create({}, 
+                chrome.windows.create({focused: false}, 
                                       function (window) {
                                         chrome.tabs.getAllInWindow(window.id, 
                                                                    function (tabs) {
@@ -23,7 +24,8 @@ chrome.extension.onMessage.addListener(
                                         request.tabs.forEach(function (tab) {
                                                                 curTab = {windowId: window.id,
                                                                           url: tab.url,
-                                                                          selected: false
+                                                                          //selected: false,
+                                                                          active:false
                                                                           };
                                                                 if (localStorage.supportPinned == 1 && tab.pinned) {
                                                                     curTab.pinned = true;
@@ -32,6 +34,8 @@ chrome.extension.onMessage.addListener(
                                                             });
                                         /* update tracked windows */
                                         trackedWindows[window.id] = request.windowId;
+                                        /* update window name */
+                                        tempWindowNames['winl'+window.id] = request.windowName;
                                         /* send response with this newly created local window Id */
                                         sendResponse({localWindowId: window.id});
                                      });
