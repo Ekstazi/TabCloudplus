@@ -401,8 +401,8 @@ $(function() {
                         }, function() {
                             // remove the tracking info in the db
                             removeTrackRecByRWinId(windowId);
-                         // remove local window Names
-                            deleteWindowNames('winr' + windowId);
+                            // remove local window Names
+                            deleteWindowName('winr' + windowId);
                             updateTabs();
                         });
                     }
@@ -418,7 +418,7 @@ $(function() {
                         // remove the tracking info in the db
                         removeTrackRecByRWinId(windowId);
                         // remove local window Names
-                        deleteWindowNames('winr' + windowId);
+                        deleteWindowName('winr' + windowId);
                         updateTabs();
                     });
                 });
@@ -428,7 +428,7 @@ $(function() {
                         $(this).parent().html('<span class="confirm">Confirm: <img class="windowreallyclose" title="Close window" src="images/delete.png" /></span>');
                     } else {
                         var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
-                        deleteWindowNames('winl' + windowId);
+                        deleteWindowName('winl' + windowId);
                         chrome.windows.remove(windowId);
                         delete chrome.extension.getBackgroundPage().trackedWindows[windowId];
                         $(this).parent().parent().remove()
