@@ -11,7 +11,7 @@ tempWindowNames = {};
 /* tracked windows, a map "chrome window id" : "tagcloud saved window id" */
 trackedWindows = {};
          
-chrome.extension.onMessage.addListener(
+chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.method  === "open_saved_window") {
             if (localStorage.openin === 'window') {
