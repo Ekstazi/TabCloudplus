@@ -385,7 +385,7 @@ $(function() {
                 $('.windowopen').live('click', function(e) {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                     var respRecved = false;
-                    chrome.extension.sendMessage({
+                    chrome.runtime.sendMessage({
                         method : "open_saved_window",
                         windowId : windowId,
                         windowName: getWindowName('winr' + windowId),
