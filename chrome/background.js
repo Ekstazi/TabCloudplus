@@ -17,10 +17,9 @@ chrome.runtime.onMessage.addListener(
             if (localStorage.openin === 'window') {
                 chrome.windows.create({focused: false}, 
                                       function (window) {
-                                        chrome.tabs.getAllInWindow(window.id, 
-                                                                   function (tabs) {
-                                                                      chrome.tabs.remove(tabs[0].id);
-                                                                   });
+                                        chrome.tabs.query({windowId: window.id}, function (tabs) {
+                                          chrome.tabs.remove(tabs[0].id);
+                                        });
                                         request.tabs.forEach(function (tab) {
                                                                 curTab = {windowId: window.id,
                                                                           url: tab.url,

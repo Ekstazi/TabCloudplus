@@ -327,7 +327,7 @@ $(function() {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                     var img = this;
                     $(img).attr('src', 'images/arrow_refresh.png').removeClass('windowsave');
-                    chrome.tabs.getAllInWindow(windowId, function(tabs) {
+                    chrome.tabs.query({windowId: window.id}, function(tabs) {
                         var data = {};
                         if (getWindowName('winl' + windowId) == 'Click to name') {
                             var date = new Date();
