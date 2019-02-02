@@ -19,10 +19,10 @@ $(function() {
                     var bkg = chrome.extension.getBackgroundPage();
                     bkg.tempWindowNames[name] = value;
                 };
-                
+
                 var deleteWindowName = function(name) {
                     var bkg = chrome.extension.getBackgroundPage();
-                    
+
                     delete bkg.tempWindowNames[name];
                 }
 
@@ -43,8 +43,11 @@ $(function() {
                                 connectWith : '.tabs',
                                 scroll : false,
                                 update : function(e, ui) {
-                                    var tab = $($(ui.item[0]).children()[0]).attr('id');
-                                    var oldWindow = $($(ui.item[0]).children()[0]).attr('windowid');
+
+
+                                    var $child = $($(ui.item[0]).children()[0]);
+                                    var tab = $child.attr('id');
+                                    var oldWindow = $child.attr('windowid');
                                     if ($(e.target).attr('id') === 'trash') {
                                         // Dragged to trash
                                         if (tab.substring(6, 7) == 'l') {
@@ -76,7 +79,7 @@ $(function() {
                                             });
 
                                             // Update image
-                                            $($(ui.item[0]).children()[0]).attr('windowid', newWindow);
+                                            $child.attr('windowid', newWindow);
                                         } else if (tab.substring(6, 7) == 'l' && newWindow.substring(3, 4) == 'r') {
                                             // Local to remote
 
@@ -84,10 +87,9 @@ $(function() {
                                             // Add to array
                                             var data = TCWindows[newWindow.substring(4)];
                                             data.tabs.splice($(ui.item[0]).index(), 0, {
-                                                url : $($(ui.item[0]).children()[0]).attr('url'),
-                                                title : $($(ui.item[0]).children()[0]).attr('title'),
-                                                favicon : ($($(ui.item[0]).children()[0]).attr('src') != 'chrome://favicon/' + $($(ui.item[0]).children()[0]).attr('url')) ? $(
-                                                        $(ui.item[0]).children()[0]).attr('src') : ''
+                                                url : $child.attr('url'),
+                                                title : $child.attr('title'),
+                                                favicon : !Favicon.isFaviconOf($child.attr('src'), $child.attr('url')) ? $child.attr('src') : ''
                                             });
                                             data.name = getWindowName(newWindow);
                                             // Send new array
@@ -100,7 +102,7 @@ $(function() {
                                             chrome.tabs.remove(parseInt(tab.substring(7), 10));
 
                                             // Update image
-                                            $($(ui.item[0]).children()[0]).removeClass('tabimglocal').attr('id', 'tabimgr' + $(ui.item[0]).index()).attr('windowid', newWindow);
+                                            $child.removeClass('tabimglocal').attr('id', 'tabimgr' + $(ui.item[0]).index()).attr('windowid', newWindow);
                                             $.each($(ui.item[0]).parent().children(), function(i, e) {
                                                 $($(e).children()[0]).attr('id', 'tabimgr' + i);
                                             });
@@ -111,7 +113,7 @@ $(function() {
                                             // Add to local
                                             chrome.tabs.create({
                                                 windowId : parseInt(newWindow.substring(4), 10),
-                                                url : $($(ui.item[0]).children()[0]).attr('url'),
+                                                url : $child.attr('url'),
                                                 index : $(ui.item[0]).index(),
                                                 selected : false
                                             }, function(newTab) {
@@ -132,7 +134,7 @@ $(function() {
                                             });
 
                                             // Update image
-                                            $($(ui.item[0]).children()[0]).attr('windowid', newWindow);
+                                            $child.attr('windowid', newWindow);
 
                                             // Update remote ids
                                             $.each($('#' + oldWindow).find('.tabs').children(), function(i, e) {
@@ -142,17 +144,19 @@ $(function() {
                                             // Remote to remote
 
                                             if (oldWindow === newWindow) {
+                                                var data = TCWindows[newWindow.substring(4)];
+                                                console.log(data);
                                                 // Move within window
+                                                //console.log('todo');
                                                 // TODO
                                             } else {
                                                 // Add to first window
                                                 // Add to array
                                                 var data = TCWindows[newWindow.substring(4)];
                                                 data.tabs.splice($(ui.item[0]).index(), 0, {
-                                                    url : $($(ui.item[0]).children()[0]).attr('url'),
-                                                    title : $($(ui.item[0]).children()[0]).attr('title'),
-                                                    favicon : ($($(ui.item[0]).children()[0]).attr('src') != 'chrome://favicon/' + $($(ui.item[0]).children()[0]).attr('url')) ? $(
-                                                            $(ui.item[0]).children()[0]).attr('src') : ''
+                                                    url : $child.attr('url'),
+                                                    title : $child.attr('title'),
+                                                    favicon : !Favicon.isFaviconOf($child.attr('src'), $child.attr('url')) ? $child.attr('src') : ''
                                                 });
                                                 data.name = getWindowName(newWindow);
                                                 // Send new array
@@ -172,10 +176,10 @@ $(function() {
                                                     windowId : oldWindow.substring(4)
                                                 });
                                                 // Update image
-                                                $($(ui.item[0]).children()[0]).attr('windowid', newWindow);
+                                                $child.attr('windowid', newWindow);
 
                                                 // Update image
-                                                $($(ui.item[0]).children()[0]).attr('windowid', newWindow);
+                                                $child.attr('windowid', newWindow);
                                                 $.each($('#' + oldWindow).find('.tabs').children(), function(i, e) {
                                                     $($(e).children()[0]).attr('id', 'tabimgr' + i);
                                                 });
@@ -230,7 +234,7 @@ $(function() {
                                                     if (curTab.pinned !== undefined) {
                                                         localStorage.supportPinned = 1;
                                                     }
-                                                    var favicon = (curTab.favIconUrl != '' && curTab.favIconUrl !== undefined) ? curTab.favIconUrl : 'chrome://favicon/' + curTab.url;
+                                                    var favicon = (curTab.favIconUrl != '' && curTab.favIconUrl !== undefined) ? curTab.favIconUrl : Favicon.getFavicon(curTab.url);
                                                     winString += '<div style="float: left"><img id="tabimgl' + curTab.id + '" windowid="winl' + curWindow.id + '" class="tabimg tabimglocal" url="'
                                                             + curTab.url + '" src="' + favicon + '" title="' + curTab.title.replace(/\"/g, "'") + '" /></div>';
                                                 });
@@ -475,7 +479,7 @@ $(function() {
                                                                         + '</legend><span class="right"><img class="windowdelete" src="images/delete.png" title="Delete window"><img class="windowopen" src="images/add.png" title="Open window"></span><div class="tabs">';
                                                                 var ti = 0;
                                                                 curWindow.tabs.forEach(function(curTab) {
-                                                                    var favicon = (curTab.favicon != '' && curTab.favicon !== undefined) ? curTab.favicon : 'chrome://favicon/' + curTab.url;
+                                                                    var favicon = (curTab.favicon != '' && curTab.favicon !== undefined) ? curTab.favicon : Favicon.getFavicon(curTab.url);
                                                                     winString += '<div style="float: left"><img id="tabimgr' + (ti++) + '" windowid="winr' + i + '" class="tabimg" src="' + favicon
                                                                             + '" url="' + curTab.url + '" title="' + curTab.title.replace(/\"/g, "'") + '" /></div>';
                                                                 });

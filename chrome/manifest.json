@@ -13,10 +13,8 @@
     
     "permissions": [
 		"tabs",
-		"chrome://favicon/",
 		"https://chrometabcloud.appspot.com/*"
 	],
-	
 	"background": {
         "page": "background.html",
         "persistent": true
