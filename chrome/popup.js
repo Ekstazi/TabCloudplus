@@ -234,9 +234,10 @@ $(function() {
                                                     if (curTab.pinned !== undefined) {
                                                         localStorage.supportPinned = 1;
                                                     }
-                                                    var favicon = (curTab.favIconUrl != '' && curTab.favIconUrl !== undefined) ? curTab.favIconUrl : Favicon.getFavicon(curTab.url);
+                                                    var altFavicon = Favicon.getFavicon(curTab.url);
+                                                    var favicon = (curTab.favIconUrl != '' && curTab.favIconUrl !== undefined) ? curTab.favIconUrl : altFavicon;
                                                     winString += '<div style="float: left"><img id="tabimgl' + curTab.id + '" windowid="winl' + curWindow.id + '" class="tabimg tabimglocal" url="'
-                                                            + curTab.url + '" src="' + favicon + '" title="' + curTab.title.replace(/\"/g, "'") + '" /></div>';
+                                                            + curTab.url + '" title="' + curTab.title.replace(/\"/g, "'") + '"  src="' + favicon+ '" /></div>';
                                                 });
                                                 winString += '</div></fieldset>';
                                                 $('#current').append(winString);
@@ -245,7 +246,7 @@ $(function() {
                                     updateScroll();
                                 });
 
-                $('.tabimg').live('mouseup', function(e) {
+                $(document).on('mouseup', '.tabimg', function(e) {
                     if (e.button === 1 || (e.button === 0 && e.ctrlKey === true)) {
                         chrome.tabs.create({
                             url : $(this).attr('url'),
@@ -256,7 +257,7 @@ $(function() {
 
                 // Local options
 
-                $('.tabimglocal').live('click', function(e) {
+                $(document).on('click', '.tabimglocal', function(e) {
                     if (e.button === 0 && e.ctrlKey === false) {
                         var tabId = $(this).attr('id').substring(7);
                         chrome.tabs.update(parseInt(tabId, 10), {
@@ -265,13 +266,13 @@ $(function() {
                     }
                 });
 
-                $('.windowname').live('click', function(e) {
+                $(document).on('click', '.windowname', function(e) {
                     var windowId = $(this).parent().attr('id');
                     $(this).html('<input type="text" class="windowinput" value="' + getWindowName(windowId) + '" />').removeClass('windowname');
                     $(this).find('input').focus();
                 });
 
-                $('.windowinput').live('blur', function(e) {
+                $(document).on('blur', '.windowinput', function(e) {
                     var windowId = $(this).parent().parent().attr('id');
                     var oldWindowName = getWindowName(windowId);
                     setWindowName(windowId, $(this).val());
@@ -314,7 +315,7 @@ $(function() {
                     }
                 });
 
-                $('.windowinput').live('keypress', function(e) {
+                $(document).on('keypress', '.windowinput', function(e) {
                     if (e.which === 13) {
                         $(this).blur();
                     } else {
@@ -323,7 +324,7 @@ $(function() {
 
                 })
 
-                $('.windowsave').live('click', function(e) {
+                $(document).on('click', '.windowsave', function(e) {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                     var img = this;
                     $(img).attr('src', 'images/arrow_refresh.png').removeClass('windowsave');
@@ -382,7 +383,7 @@ $(function() {
                     });
                 });
 
-                $('.windowopen').live('click', function(e) {
+                $(document).on('click', '.windowopen', function(e) {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                     var respRecved = false;
                     chrome.runtime.sendMessage({
@@ -393,7 +394,7 @@ $(function() {
                         });
                 });
 
-                $('.windowdelete').live('click', function(e) {
+                $(document).on('click', '.windowdelete', function(e) {
                     if (localStorage.deleteconfirm === 'yes') {
                         $(this).parent().html('<span class="confirm">Confirm: <img class="windowreallydelete" title="Delete window" src="images/delete.png" /></span>');
                     } else {
@@ -412,7 +413,7 @@ $(function() {
                     }
                 });
 
-                $('.windowreallydelete').live('click', function(e) {
+                $(document).on('click', '.windowreallydelete', function(e) {
                     var windowId = parseInt($(this).parent().parent().parent().attr('id').substring(4), 10);
                     $(this).attr('src', 'images/arrow_refresh.png');
                     var self = this;
@@ -427,7 +428,7 @@ $(function() {
                     });
                 });
 
-                $('.windowclose').live('click', function(e) {
+                $(document).on('click', '.windowclose', function(e) {
                     if (localStorage.deleteconfirm === 'yes') {
                         $(this).parent().html('<span class="confirm">Confirm: <img class="windowreallyclose" title="Close window" src="images/delete.png" /></span>');
                     } else {
@@ -439,7 +440,7 @@ $(function() {
                     }
                 });
 
-                $('.windowreallyclose').live('click', function(e) {
+                $(document).on('click', '.windowreallyclose', function(e) {
                     var windowId = parseInt($(this).parent().parent().parent().attr('id').substring(4), 10);
                     deleteWindowNames('winl' + windowId);
                     chrome.windows.remove(windowId);
@@ -479,13 +480,19 @@ $(function() {
                                                                         + '</legend><span class="right"><img class="windowdelete" src="images/delete.png" title="Delete window"><img class="windowopen" src="images/add.png" title="Open window"></span><div class="tabs">';
                                                                 var ti = 0;
                                                                 curWindow.tabs.forEach(function(curTab) {
-                                                                    var favicon = (curTab.favicon != '' && curTab.favicon !== undefined) ? curTab.favicon : Favicon.getFavicon(curTab.url);
-                                                                    winString += '<div style="float: left"><img id="tabimgr' + (ti++) + '" windowid="winr' + i + '" class="tabimg" src="' + favicon
-                                                                            + '" url="' + curTab.url + '" title="' + curTab.title.replace(/\"/g, "'") + '" /></div>';
+                                                                    var altFavicon = Favicon.getFavicon(curTab.url);
+                                                                    var favicon = (curTab.favicon != '' && curTab.favicon !== undefined) ? curTab.favicon : altFavicon;
+                                                                    winString += '<div style="float: left"><img id="tabimgr' + (ti++) + '" windowid="winr' + i + '" class="tabimg" src_orig="' + favicon +'" src_alt="' + altFavicon + '" url="' + curTab.url + '" title="' + curTab.title.replace(/\"/g, "'") + '"/></div>';
                                                                 });
                                                                 winString += '</div></fieldset>';
                                                                 $('#saved').append(winString);
-
+                                                                $("#saved .tabimg").each(function(){
+                                                                    var $this=$(this);
+                                                                    $this.one('error', function(){
+                                                                        $this.attr('src', $this.attr('src_alt'));
+                                                                    });
+                                                                    $this.attr('src', $this.attr('src_orig'));
+                                                                });
                                                                 // update tracking window db, since the remote window id might bechanged after ADD and
                                                                 // DELETE operations
                                                                 for ( var localWindowId in chrome.extension.getBackgroundPage().trackedWindows) {
@@ -522,13 +529,13 @@ $(function() {
 
                 // Extra links
 
-                $('#optionslink').click(function(e) {
+                $('#optionslink').on('click', function(e) {
                     chrome.tabs.create({
                         url : chrome.extension.getURL('options.html')
                     });
                 });
 
-                $('#logoutlink').click(function(e) {
+                $('#logoutlink').on('click', function(e) {
                     chrome.tabs.create({
                         url : 'https://chrometabcloud.appspot.com/logout'
                     });
@@ -547,9 +554,10 @@ $(function() {
                 scroll.tinyscrollbar({
                     axis : 'y'
                 });
+
                 var updateScroll = function() {
                     $('.viewport').height(Math.min($('.overview').height(), 500));
-                    scroll.update();
+                    scroll.data("plugin_tinyscrollbar").update();
                 }
                 updateScroll();
 
