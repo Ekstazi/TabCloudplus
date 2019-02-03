@@ -543,9 +543,7 @@ $(function() {
                 // Extra links
 
                 $('#optionslink').on('click', function(e) {
-                    chrome.tabs.create({
-                        url : chrome.extension.getURL('options.html')
-                    });
+                    chrome.runtime.openOptionsPage();
                 });
 
                 $('#logoutlink').on('click', function(e) {

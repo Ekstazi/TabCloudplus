@@ -21,8 +21,10 @@
         "persistent": false
 	},
     
-	"options_page": "options.html",
-	
+	"options_ui": {
+		"page": "options.html",
+		"open_in_tab": false
+	},
 	"browser_action": {
 		"default_icon": "images/menu.png",
 		"default_popup": "popup.html"
