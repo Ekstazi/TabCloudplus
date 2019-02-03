@@ -9,29 +9,33 @@ $(function() {
                 })
 
                 var getWindowName = function(name) {
-                    var bkg = chrome.extension.getBackgroundPage();
-                    return bkg.tempWindowNames[name];
+                    var tempWindowNames = Storage.get('tempWindowNames');
+                    return tempWindowNames[name];
                 };
                 var setWindowName = function(name, value) {
                     if (value.length == 0) {
                         value = 'Window';
                     }
-                    var bkg = chrome.extension.getBackgroundPage();
-                    bkg.tempWindowNames[name] = value;
+                    var tempWindowNames = Storage.get('tempWindowNames');
+                    tempWindowNames[name] = value;
+                    Storage.set('tempWindowNames', tempWindowNames);
                 };
 
                 var deleteWindowName = function(name) {
-                    var bkg = chrome.extension.getBackgroundPage();
+                    var tempWindowNames = Storage.get('tempWindowNames');
 
-                    delete bkg.tempWindowNames[name];
+                    delete tempWindowNames[name];
+                    Storage.set('tempWindowNames', tempWindowNames);
                 }
 
                 // remote tracking record by remote WindowID
                 var removeTrackRecByRWinId = function(windowId) {
-                    for ( var remoteWindowId in chrome.extension.getBackgroundPage().trackedWindows) {
-                        if (chrome.extension.getBackgroundPage().trackedWindows[remoteWindowId] === windowId)
-                            delete chrome.extension.getBackgroundPage().trackedWindows[remoteWindowId];
+                    var trackedWindows = Storage.get('trackedWindows');
+                    for ( var remoteWindowId in trackedWindows) {
+                        if (trackedWindows[remoteWindowId] === windowId)
+                            delete trackedWindows[remoteWindowId];
                     }
+                    Storage.set('trackedWindows', trackedWindows);
                 }
 
                 var makeSortable = function() {
@@ -220,8 +224,8 @@ $(function() {
                                 function(windows) {
                                     windows
                                             .forEach(function(curWindow) {
-                                                console.log(curWindow.id);
-                                                console.log(getWindowName('winl' + curWindow.id));
+                                                console.log('windowId' + curWindow.id);
+                                                console.log('winname', getWindowName('winl' + curWindow.id));
                                                 if (getWindowName('winl' + curWindow.id) === undefined)
                                                     setWindowName('winl' + curWindow.id, 'Click to name');
                                                 console.log(getWindowName('winl' + curWindow.id));
@@ -278,7 +282,7 @@ $(function() {
                     setWindowName(windowId, $(this).val());
                     $(this).parent().text(getWindowName(windowId)).addClass('windowname');
 
-                    var trackedWindows = chrome.extension.getBackgroundPage().trackedWindows;
+                    var trackedWindows = Storage.get('trackedWindows');
                     // Remote windows
                     if (windowId.substring(3, 4) == 'r') {
                         var data = TCWindows[windowId.substring(4)];
@@ -313,6 +317,7 @@ $(function() {
                          */
                         delete trackedWindows[windowId.substring(4)];
                     }
+                    Storage.set('trackedWindows', trackedWindows);
                 });
 
                 $(document).on('keypress', '.windowinput', function(e) {
@@ -328,7 +333,7 @@ $(function() {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                     var img = this;
                     $(img).attr('src', 'images/arrow_refresh.png').removeClass('windowsave');
-                    chrome.tabs.query({windowId: window.id}, function(tabs) {
+                    chrome.tabs.query({windowId: windowId}, function(tabs) {
                         var data = {};
                         if (getWindowName('winl' + windowId) == 'Click to name') {
                             var date = new Date();
@@ -351,7 +356,8 @@ $(function() {
                          * if this window is tracked by a saved window, we
                          * should update the saved window, otherwise add
                          */
-                        var trackedWindowId = chrome.extension.getBackgroundPage().trackedWindows[windowId];
+                        var trackedWindows = Storage.get('trackedWindows');
+                        var trackedWindowId = trackedWindows[windowId];
                         if (trackedWindowId === undefined) {
                             $.post('https://chrometabcloud.appspot.com/add', {
                                 window : JSON.stringify(data)
@@ -364,11 +370,11 @@ $(function() {
                                  * it will eventually be updated in updateTabs()
                                  * when build the trackedWindows * db.
                                  */
-                                chrome.extension.getBackgroundPage().trackedWindows[windowId] = -1;
+                                trackedWindows[windowId] = -1;
+                                Storage.set('trackedWindows', trackedWindows);
                                 updateTabs();
 
                             });
-
                         } else {
                             $.post('https://chrometabcloud.appspot.com/update', {
                                 window : JSON.stringify(data),
@@ -385,13 +391,12 @@ $(function() {
 
                 $(document).on('click', '.windowopen', function(e) {
                     var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
-                    var respRecved = false;
                     chrome.runtime.sendMessage({
                         method : "open_saved_window",
                         windowId : windowId,
                         windowName: getWindowName('winr' + windowId),
                         tabs : TCWindows[windowId].tabs
-                        });
+                    });
                 });
 
                 $(document).on('click', '.windowdelete', function(e) {
@@ -435,7 +440,11 @@ $(function() {
                         var windowId = parseInt($(this).parent().parent().attr('id').substring(4), 10);
                         deleteWindowName('winl' + windowId);
                         chrome.windows.remove(windowId);
-                        delete chrome.extension.getBackgroundPage().trackedWindows[windowId];
+
+                        var trackedWindows = Storage.get('trackedWindows');
+                        delete trackedWindows[windowId];
+                        Storage.set('trackedWindows', trackedWindows);
+
                         $(this).parent().parent().remove()
                     }
                 });
@@ -444,7 +453,11 @@ $(function() {
                     var windowId = parseInt($(this).parent().parent().parent().attr('id').substring(4), 10);
                     deleteWindowNames('winl' + windowId);
                     chrome.windows.remove(windowId);
-                    delete chrome.extension.getBackgroundPage().trackedWindows[windowId];
+
+                    var trackedWindows = Storage.get('trackedWindows');
+                    delete trackedWindows[windowId];
+                    Storage.set('trackedWindows', trackedWindows);
+
                     $(this).parent().parent().parent().remove()
                 });
 
@@ -495,18 +508,18 @@ $(function() {
                                                                 });
                                                                 // update tracking window db, since the remote window id might bechanged after ADD and
                                                                 // DELETE operations
-                                                                for ( var localWindowId in chrome.extension.getBackgroundPage().trackedWindows) {
+                                                                var trackedWindows = Storage.get('trackedWindows');
+                                                                for ( var localWindowId in trackedWindows) {
                                                                     //console.log(curWindow.name);
                                                                    //console.log(getWindowName('winl' + localWindowId));
                                                                     if (curWindow.name === getWindowName('winl' + localWindowId)) {
                                                                         newTrackedWindows[localWindowId] = i;
                                                                     }
                                                                 }
-
                                                                 i++;
                                                             });
                                                     // update trackedWindows
-                                                    chrome.extension.getBackgroundPage().trackedWindows = newTrackedWindows;
+                                                    Storage.set('trackedWindows', newTrackedWindows);
                                                     makeSortable();
                                                     updateScroll();
                                                 }
